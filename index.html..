@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiki Taka Toe ⚽</title>
+  <style>
+    body {
+      background: radial-gradient(#0a7728, #053d14);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 30px;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 120px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+    .cell {
+      width: 120px;
+      height: 120px;
+      background: #11632b;
+      border: 3px solid #fff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .cell:hover {
+      background: #1ca543;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+    input {
+      margin-top: 30px;
+      padding: 10px;
+      width: 250px;
+      border-radius: 5px;
+      border: none;
+      text-align: center;
+      font-size: 16px;
+    }
+    .trophy {
+      font-size: 22px;
+      margin: 15px;
+    }
+    #reset {
+      margin-top: 20px;
+      background: #fff;
+      color: #053d14;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⚽ TIKI TAKA TOE ⚽</h1>
+  <div id="status">Turno: <b id="turno">Squadra A (🔴)</b></div>
+
+  <input type="text" id="playerInput" placeholder="Scrivi un giocatore (es: zid)" />
+  <div id="board"></div>
+  <div class="trophy">🏆 Scudetto | 🥇 Pallone d’Oro | 👟 Scarpa d’Oro</div>
+  <button id="reset">Reset</button>
+
+  <script>
+    const giocatori = [
+      "Messi", "Ronaldo", "Zidane", "Benzema", "Mbappé", "Neymar", "Haaland", "Lewandowski",
+      "Modric", "Iniesta", "Xavi", "Ronaldinho", "Pelé", "Maradona", "Van Dijk", "Salah",
+      "Beckham", "Henry", "Buffon", "Casillas", "De Bruyne", "Bellingham", "Foden", "Gavi",
+      "Kane", "Son", "Totti", "Del Piero", "Pirlo", "Chiellini", "Dybala", "Vlahovic",
+      "Okocha", "Kvaratskhelia", "Osimhen", "Bastoni", "Donnarumma", "Hakimi", "Griezmann"
+    ];
+
+    const trofei = ["🏆", "🥇", "👟"];
+    const board = document.getElementById("board");
+    const status = document.getElementById("status");
+    const turnoDisplay = document.getElementById("turno");
+    const input = document.getElementById("playerInput");
+
+    let currentPlayer = "🔴";
+    let gameGrid = Array(9).fill("");
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.index = i;
+      board.appendChild(cell);
+    }
+
+    function vincitore() {
+      const combinazioni = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      for (let combo of combinazioni) {
+        const [a, b, c] = combo;
+        if (gameGrid[a] && gameGrid[a] === gameGrid[b] && gameGrid[a] === gameGrid[c]) {
+          return gameGrid[a];
+        }
+      }
+      return null;
+    }
+
+    function aggiornaTurno() {
+      currentPlayer = currentPlayer === "🔴" ? "🔵" : "🔴";
+      turnoDisplay.textContent = currentPlayer === "🔴" ? "Squadra A (🔴)" : "Squadra B (🔵)";
+    }
+
+    input.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        const testo = input.value.trim().toLowerCase();
+        const trovato = giocatori.find(n => n.toLowerCase().includes(testo));
+        if (!trovato) {
+          status.textContent = "❌ Nessun giocatore trovato! Turno passa all'altra squadra.";
+          aggiornaTurno();
+          input.value = "";
+          return;
+        }
+
+        const celleVuote = [...document.querySelectorAll(".cell")].filter(c => !c.textContent);
+        if (celleVuote.length === 0) return;
+        const cell = celleVuote[Math.floor(Math.random() * celleVuote.length)];
+
+        const trofeo = trofei[Math.floor(Math.random() * trofei.length)];
+        cell.textContent = `${trofeo}\n${trovato}`;
+        gameGrid[cell.dataset.index] = currentPlayer;
+
+        const win = vincitore();
+        if (win) {
+          status.textContent = `🎉 ${currentPlayer === "🔴" ? "Squadra A" : "Squadra B"} vince!`;
+          input.disabled = true;
+          return;
+        }
+
+        aggiornaTurno();
+        input.value = "";
+      }
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      gameGrid = Array(9).fill("");
+      document.querySelectorAll(".cell").forEach(c => c.textContent = "");
+      input.disabled = false;
+      currentPlayer = "🔴";
+      turnoDisplay.textContent = "Squadra A (🔴)";
+      status.textContent = "Nuova partita! 👟";
+      input.value = "";
+    });
+  </script>
+</body>
+</html>
